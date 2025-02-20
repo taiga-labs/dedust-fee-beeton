@@ -97,7 +97,7 @@ global slice glob::manager_address;
             check_swap_forward_payload(innter_payload, ToncoSwap)
         );
 
-        if (dedust_swap? == 1) {
+        if (dex_swap? == TRUE) {
             jetton_amount_to_admin = (jetton_amount * 5) / 100; ;; 5% to admin
             remaining_jetton_amount = jetton_amount - jetton_amount_to_admin; ;; 70% or 90% to user's swap
         
@@ -136,7 +136,7 @@ global slice glob::manager_address;
 
     send_raw_message(msg.end_cell(), 64); ;; revert on errors
 
-    if dex_swap? == 1 {
+    if dex_swap? == TRUE {
         slice manager_wallet_address = calculate_user_jetton_wallet_address(glob::manager_address, jetton_master_address, glob::manager_address, jetton_wallet_code);
         send_jetton_internal_transfer(manager_wallet_address, owner_address, jetton_amount_to_admin, query_id, 10000000, 1);
     }

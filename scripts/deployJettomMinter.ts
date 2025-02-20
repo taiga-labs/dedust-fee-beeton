@@ -18,6 +18,6 @@ export async function run(provider: NetworkProvider) {
         manager_address: Address.parse("")
     }, await compile('JettonMinter')));
 
-    await jettonMinter.sendDeploy(provider.sender(), toNano('0.02'));
+    await jettonMinter.sendDeploy(provider.sender(), toNano('0.01'));
     await provider.waitForDeploy(jettonMinter.address);
 }
