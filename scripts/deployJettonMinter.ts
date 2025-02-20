@@ -1,5 +1,5 @@
 import { Address, toNano } from '@ton/core';
-import { JettonMinter } from '../wrappers/JettomMinter';
+import { JettonMinter } from '../wrappers/JettonMinter';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import { buildjettonMinterContentCell } from '../helpers/metadata';
 
@@ -15,7 +15,7 @@ export async function run(provider: NetworkProvider) {
             image: "https://upload.wikimedia.org/wikipedia/commons/8/81/Bee_Collecting_Pollen_2004-08-14.jpg"
         }),
         jetton_wallet_code: await compile('JettonWallet'),
-        manager_address: Address.parse("")
+        manager_address: Address.parse("UQCVSjegGs-QZqfko9lKBHMNQt6dHPSI3m8xD6ipmtHRRv_G")
     }, await compile('JettonMinter')));
 
     await jettonMinter.sendDeploy(provider.sender(), toNano('0.01'));
