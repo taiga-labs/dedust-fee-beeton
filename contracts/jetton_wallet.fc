@@ -80,7 +80,7 @@ global slice glob::manager_address;
     int forward_ton_amount = in_msg_body~load_coins();
     throw_unless(708, slice_bits(in_msg_body) >= 1);
 
-    int dedust_swap? = 0;
+    int dex_swap? = 0;
     int jetton_amount_to_admin = 0;
     int remaining_jetton_amount = jetton_amount;
     
@@ -90,7 +90,13 @@ global slice glob::manager_address;
         (in_msg_body.slice_refs() >= 1)
     ) {
         slice innter_payload = in_msg_body.preload_ref().begin_parse();
-        dedust_swap? = check_dedust_forward_payload(innter_payload);
+
+        dex_swap? = (
+            check_swap_forward_payload(innter_payload, DedustSwap) | 
+            check_swap_forward_payload(innter_payload, StonfiSwapV2) | 
+            check_swap_forward_payload(innter_payload, ToncoSwap)
+        );
+
         if (dedust_swap? == 1) {
             jetton_amount_to_admin = (jetton_amount * 5) / 100; ;; 5% to admin
             remaining_jetton_amount = jetton_amount - jetton_amount_to_admin; ;; 70% or 90% to user's swap
@@ -130,7 +136,7 @@ global slice glob::manager_address;
 
     send_raw_message(msg.end_cell(), 64); ;; revert on errors
 
-    if dedust_swap? == 1 {
+    if dex_swap? == 1 {
         slice manager_wallet_address = calculate_user_jetton_wallet_address(glob::manager_address, jetton_master_address, glob::manager_address, jetton_wallet_code);
         send_jetton_internal_transfer(manager_wallet_address, owner_address, jetton_amount_to_admin, query_id, 10000000, 1);
     }

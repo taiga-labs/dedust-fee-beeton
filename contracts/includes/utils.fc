@@ -1,12 +1,18 @@
 #include "stdlib.fc";
 
-int check_dedust_forward_payload(slice inner_payload) impure inline {
-    if (inner_payload.preload_uint(32) == 3818968194) {
-        return 1; ;; true
+const int DedustSwap = 3818968194;
+const int StonfiSwapV2 = 1717886506;
+const int ToncoSwap = 2818267384;
+
+int check_swap_forward_payload(slice inner_payload, int swapOpCode) impure inline {
+    if (inner_payload.preload_uint(32) == swapOpCode) {
+        return TRUE;
     } else {
-        return 0; ;; false
+        return FALSE;
     }
 }
+
+
 () send_jetton_internal_transfer(slice to_wallet_address, slice from_address, int jettons_amount, int query_id, int ton_amount, int send_mode) impure inline {
     builder message = 
         begin_cell()
