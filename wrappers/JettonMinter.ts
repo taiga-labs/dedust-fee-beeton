@@ -74,4 +74,23 @@ export class JettonMinter implements Contract {
                 .endCell(),
         });
     }
+
+    async sendChangeAdmin(provider: ContractProvider, via: Sender, 
+        oprions: {
+            value: bigint
+            queryId: bigint
+            newAdmin: Address
+        }
+    ) {
+        await provider.internal(via, {
+            value: oprions.value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: 
+                beginCell()
+                    .storeUint(3, 32)
+                    .storeUint(oprions.queryId, 64)
+                    .storeAddress(oprions.newAdmin)
+                .endCell(),
+        });
+    }
 }
