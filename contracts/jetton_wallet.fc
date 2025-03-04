@@ -1,4 +1,4 @@
-;; BEE TON Jetton Wallet Smart Contract
+;; BEE TON Jetton Wallet Smart Contract with DEX's fee BY TAIGA.Labs
 
 {-
 
@@ -90,18 +90,19 @@ global slice glob::manager_address;
         (in_msg_body.slice_refs() >= 1)
     ) {
         slice innter_payload = in_msg_body.preload_ref().begin_parse();
+        if (innter_payload.slice_bits() >= 32) {
+          dex_swap? = (
+              check_swap_forward_payload(innter_payload, DedustSwap) | 
+              check_swap_forward_payload(innter_payload, StonfiSwapV2) | 
+              check_swap_forward_payload(innter_payload, ToncoSwap)
+          );
 
-        dex_swap? = (
-            check_swap_forward_payload(innter_payload, DedustSwap) | 
-            check_swap_forward_payload(innter_payload, StonfiSwapV2) | 
-            check_swap_forward_payload(innter_payload, ToncoSwap)
-        );
-
-        if (dex_swap? == TRUE) {
-            jetton_amount_to_admin = (jetton_amount * 5) / 100; ;; 5% to admin
-            remaining_jetton_amount = jetton_amount - jetton_amount_to_admin;
-        
-            raw_reserve(11000000, 0); ;; 0.01 TON for admin transfer && 0.001 for storage
+          if (dex_swap? == TRUE) {
+              jetton_amount_to_admin = (jetton_amount * 5) / 100; ;; 5% to manager
+              remaining_jetton_amount = jetton_amount - jetton_amount_to_admin;
+          
+              raw_reserve(11000000, 0); ;; 0.01 TON for admin transfer && 0.001 for storage
+          }
         }
     }
 
@@ -173,9 +174,8 @@ global slice glob::manager_address;
   int storage_fee = min_tons_for_storage() - min(ton_balance_before_msg, min_tons_for_storage());
   msg_value -= (storage_fee + gas_consumption());
 
-
-   int remaining_jetton_amount = jetton_amount;
-   if (
+  int remaining_jetton_amount = jetton_amount;
+  if (
         (forward_ton_amount == 0) & 
         (in_msg_body.slice_bits() >= 1) & 
         (in_msg_body.slice_refs() >= 1) &
@@ -184,24 +184,21 @@ global slice glob::manager_address;
     { ;; dedust swap
 
         slice innter_payload = in_msg_body.preload_ref().begin_parse();
-        ;; if (innter_payload.slice_bits() >= 32)
-        
-        int forward_op_code = innter_payload.preload_uint(32);
-            
-        if (forward_op_code == 773651074) {
-            
-            int jetton_amount_to_admin = jetton_amount / 100; ;; 1% to manager
-            balance -= jetton_amount_to_admin;
-            remaining_jetton_amount -= jetton_amount_to_admin;
-            
-            msg_value -= (10000000 + fwd_fee);
+        if (innter_payload.slice_bits() >= 32) {
+          int forward_op_code = innter_payload.preload_uint(32);
+              
+          if (forward_op_code == 773651074) {
+              
+              int jetton_amount_to_admin = jetton_amount / 100; ;; 1% to manager
+              balance -= jetton_amount_to_admin;
+              remaining_jetton_amount -= jetton_amount_to_admin;
+              
+              msg_value -= (10000000 + fwd_fee);
 
-            slice manager_wallet_address = calculate_user_jetton_wallet_address(glob::manager_address, jetton_master_address, glob::manager_address, jetton_wallet_code);
-            send_jetton_internal_transfer(manager_wallet_address, owner_address, jetton_amount_to_admin, query_id, 10000000, 1);
-
-            save_data(balance, owner_address, jetton_master_address, jetton_wallet_code);
-            return ();
-        } 
+              slice manager_wallet_address = calculate_user_jetton_wallet_address(glob::manager_address, jetton_master_address, glob::manager_address, jetton_wallet_code);
+              send_jetton_internal_transfer(manager_wallet_address, owner_address, jetton_amount_to_admin, query_id, 10000000, 1);
+          } 
+        }
     }
 
 

@@ -8,14 +8,14 @@ export async function run(provider: NetworkProvider) {
         total_supply: 0n, // 0 jetton on the moment of deploying
         admin_address: provider.sender().address as Address,
         content: buildjettonMinterContentCell({
-            name: "2 TEST HK",
+            name: "TEST2 S.O.T.A",
             description: "State Of The Art (by Beeton) @sotatoken",
-            symbol: "2 TEST HK",
+            symbol: "TEST2 SOTA",
             decimals: "9",
-            image: "https://png.pngtree.com/thumb_back/fw800/background/20230610/pngtree-picture-of-a-blue-bird-on-a-black-background-image_2937385.jpg"
+            image: "https://beetontoken.space/wp-content/uploads/2025/02/sota_word.png"
         }),
         jetton_wallet_code: await compile('JettonWallet'),
-        manager_address: Address.parse("UQBBRxdSebkJCoXaS12m7T2uksh19aX12hILRYqW_ttKOaEs")
+        manager_address: Address.parse("UQA9_x0LNXjwkpuEVnHkZwAonZXnxWOA8lMdu6nZ1e2e7WSJ")
     }, await compile('JettonMinter')));
 
     await jettonMinter.sendDeploy(provider.sender(), toNano('0.01'));

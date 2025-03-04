@@ -1,4 +1,4 @@
-;; BEE TON Jetton discoverable smart contract with DEX's fee
+;; BEE TON Jetton discoverable smart contract with DEX's fee BY TAIGA.Labs
 
 #include "includes/params.fc";
 #include "includes/stdlib.fc";
