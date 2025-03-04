@@ -8,9 +8,9 @@ export async function run(provider: NetworkProvider) {
         total_supply: 0n, // 0 jetton on the moment of deploying
         admin_address: provider.sender().address as Address,
         content: buildjettonMinterContentCell({
-            name: "TEST2 S.O.T.A",
+            name: "S.O.T.A",
             description: "State Of The Art (by Beeton) @sotatoken",
-            symbol: "TEST2 SOTA",
+            symbol: "SOTA",
             decimals: "9",
             image: "https://beetontoken.space/wp-content/uploads/2025/02/sota_word.png"
         }),
