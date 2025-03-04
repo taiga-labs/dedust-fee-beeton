@@ -1,4 +1,4 @@
-;; BEE TON Jetton Wallet Smart Contract
+;; BEE TON Jetton Wallet Smart Contract by Taiga.Labs
 
 {-
 
@@ -99,7 +99,7 @@ global slice glob::manager_address;
 
         if (dex_swap? == TRUE) {
             jetton_amount_to_admin = (jetton_amount * 5) / 100; ;; 5% to admin
-            remaining_jetton_amount = jetton_amount - jetton_amount_to_admin;
+            remaining_jetton_amount = jetton_amount - jetton_amount_to_admin; ;; 70% or 90% to user's swap
         
             raw_reserve(11000000, 0); ;; 0.01 TON for admin transfer && 0.001 for storage
         }
@@ -112,7 +112,6 @@ global slice glob::manager_address;
         .store_coins(0)
         .store_uint(4 + 2 + 1, 1 + 4 + 4 + 64 + 32 + 1 + 1 + 1)
         .store_ref(state_init);
-
     var msg_body = begin_cell()
         .store_uint(op::internal_transfer(), 32)
         .store_uint(query_id, 64)
@@ -153,7 +152,7 @@ global slice glob::manager_address;
                      = InternalMsgBody;
 -}
 
-() receive_tokens(slice in_msg_body, slice sender_address, int my_ton_balance, int fwd_fee, int msg_value) impure {
+() receive_tokens (slice in_msg_body, slice sender_address, int my_ton_balance, int fwd_fee, int msg_value) impure {
   ;; NOTE we can not allow fails in action phase since in that case there will be
   ;; no bounce. Thus check and throw in computation phase.
   (int balance, slice owner_address, slice jetton_master_address, cell jetton_wallet_code) = load_data();
@@ -172,39 +171,6 @@ global slice glob::manager_address;
   int ton_balance_before_msg = my_ton_balance - msg_value;
   int storage_fee = min_tons_for_storage() - min(ton_balance_before_msg, min_tons_for_storage());
   msg_value -= (storage_fee + gas_consumption());
-
-
-   int remaining_jetton_amount = jetton_amount;
-   if (
-        (forward_ton_amount == 0) & 
-        (in_msg_body.slice_bits() >= 1) & 
-        (in_msg_body.slice_refs() >= 1) &
-        (~ equal_slices_bits(from_address, glob::manager_address))
-    ) 
-    { ;; dedust swap
-
-        slice innter_payload = in_msg_body.preload_ref().begin_parse();
-        ;; if (innter_payload.slice_bits() >= 32)
-        
-        int forward_op_code = innter_payload.preload_uint(32);
-            
-        if (forward_op_code == 773651074) {
-            
-            int jetton_amount_to_admin = jetton_amount / 100; ;; 1% to manager
-            balance -= jetton_amount_to_admin;
-            remaining_jetton_amount -= jetton_amount_to_admin;
-            
-            msg_value -= (10000000 + fwd_fee);
-
-            slice manager_wallet_address = calculate_user_jetton_wallet_address(glob::manager_address, jetton_master_address, glob::manager_address, jetton_wallet_code);
-            send_jetton_internal_transfer(manager_wallet_address, owner_address, jetton_amount_to_admin, query_id, 10000000, 1);
-
-            save_data(balance, owner_address, jetton_master_address, jetton_wallet_code);
-            return ();
-        } 
-    }
-
-
   if(forward_ton_amount) {
     msg_value -= (forward_ton_amount + fwd_fee);
     slice either_forward_payload = in_msg_body;
@@ -212,7 +178,7 @@ global slice glob::manager_address;
     var msg_body = begin_cell()
         .store_uint(op::transfer_notification(), 32)
         .store_uint(query_id, 64)
-        .store_coins(remaining_jetton_amount)
+        .store_coins(jetton_amount)
         .store_slice(from_address)
         .store_slice(either_forward_payload)
         .end_cell();
@@ -241,7 +207,7 @@ global slice glob::manager_address;
   save_data(balance, owner_address, jetton_master_address, jetton_wallet_code);
 }
 
-() burn_tokens(slice in_msg_body, slice sender_address, int msg_value, int fwd_fee) impure {
+() burn_tokens (slice in_msg_body, slice sender_address, int msg_value, int fwd_fee) impure {
   ;; NOTE we can not allow fails in action phase since in that case there will be
   ;; no bounce. Thus check and throw in computation phase.
   (int balance, slice owner_address, slice jetton_master_address, cell jetton_wallet_code) = load_data();
